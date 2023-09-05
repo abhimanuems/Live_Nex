@@ -5,7 +5,6 @@ import Slider from '../components/Slider'
 const BodyPage = () => {
   return (
     <>
-    <Slider/>
     <Body/>
     </>
   )

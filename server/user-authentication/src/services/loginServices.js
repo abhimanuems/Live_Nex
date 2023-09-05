@@ -29,15 +29,16 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
+    console.log('user details is ',user)
     if (!user) res.json({ error: "please create an acccount" });
     if (user) {
       bcrypt
         .compare(password, user.password)
         .then(function (result) {
+          console.log("result is ",result)
           if (result) {
-
             generateToken(res, user._id);
-            res.status(200).json({ message: result })
+            res.status(200).json({ message: result ,user })
           } else {
             res.json("invalid password");
           }
@@ -57,7 +58,6 @@ const login = async (req, res) => {
 };
 //google Oauth
 const Oauth = async (req, res) => {
-  console.log("enetefd at the google oauath");
   try {
     passport.authenticate("google", {
       scope: ["profile", "email"],
@@ -70,43 +70,46 @@ const Oauth = async (req, res) => {
 //google auth callback 
 const googleCallBack = (req, res) => {
   try {
-    passport.authenticate("google", { failureRedirect: "/" }, async (err, user) => {
-      if (err) {
-        return res.status(500).json("Authentication failed");
-      }
-      if (!user) {
-        return res.status(401).json("User not authenticated");
-      }
-      const email = user.email
-      const userExits = await User.findOne({ email });
-      console.log(userExits)
-      if (userExits)
-        generateToken(res, userExits._id);
+    passport.authenticate(
+      "google",
+      { failureRedirect: "/" },
+      async (err, user) => {
+        if (err) {
+          return res.status(500).json("Authentication failed");
+        }
+        if (!user) {
+          return res.status(401).json("User not authenticated");
+        }
 
-      if (!userExits) {
-        const user = await User.create({ email });
-        generateToken(res, user._id);
-        res.status(200).json("authenticated");
-        console.log(user);
-        if (user) {
+        const email = user.email;
+        const userExits = await User.findOne({ email });
+
+        if (userExits) {
+          generateToken(res, userExits._id);
+          res.send(`
+          <script>
+            window.opener.postMessage(${JSON.stringify(
+              user
+            )}, 'http://localhost:3000');
+            window.close();
+          </script>
+        `);
         } else {
-          res.status(400).json("invalid user data");
-          return;
+          const newUser = await User.create({ email });
+          if (newUser) {
+            generateToken(res, newUser._id);
+            res.status(200).json("authenticated");
+          } else {
+            res.status(400).json("invalid user data");
+          }
         }
       }
-      res.send(`
-    <script>
-      window.opener.postMessage(${JSON.stringify(
-        user
-      )}, 'http://localhost:3000');
-      window.close();
-    </script>
-  `);
-    })(req, res);
+    )(req, res);
   } catch (err) {
     if (err) throw err;
   }
 };
+
 const logout = (req, res) => {
   try {
     res.cookie("jwt", "", {
@@ -122,5 +125,6 @@ const logout = (req, res) => {
     if (err) throw err;
   }
 }
+
 
 export { login, Oauth, googleCallBack, logout };

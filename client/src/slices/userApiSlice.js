@@ -17,7 +17,14 @@ export const userApiSlice = apiSlice.injectEndpoints({
     }),
     signup: builder.mutation({
       query: (data) => ({
-        url: "auth/signup",
+        url: "http://localhost:8000/auth/signup",
+        method: "post",
+        body: data,
+      }),
+    }),
+    otp: builder.mutation({
+      query: (data) => ({
+        url: "http://localhost:8000/auth/otp",
         method: "post",
         body: data,
       }),
@@ -31,4 +38,4 @@ export const userApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const { useLoginMutation,useGoogleAuthMutation,useSignupMutation, useLogoutMutation} =userApiSlice
+export const { useLoginMutation,useGoogleAuthMutation,useSignupMutation, useLogoutMutation , useOtpMutation} =userApiSlice

@@ -1,69 +1,70 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useGoogleAuthMutation,useLoginMutation } from "../slices/userApiSlice";
-import { useDispatch,useSelector } from "react-redux";
+import {
+  useGoogleAuthMutation,
+  useLoginMutation,
+} from "../slices/userApiSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { setCredentials } from "../slices/authSlice";
 
 export default function Login() {
-  const [email,setEmail] = useState('');
-  const [password,setPassword] =useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [google] = useGoogleAuthMutation();
-  const [login] =useLoginMutation();
+  const [login] = useLoginMutation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-   const { userInfo } = useSelector((state) => state.auth);
-   useEffect(() => {
-     if (userInfo) {
-       navigate("/");
-     }
-   }, [navigate, userInfo]);
-  const handleSubmit =async(e)=>{
-    e.preventDefault();
-    try{
-      const response = await login({ email, password }).unwrap();
-        if (response.message) {
-          dispatch(setCredentials({ email }));
-           navigate("/");
-          toast.error(response);
-         
-        } else if (response.error) {
-          toast.error("inavlid credintials");
-        }
-    }catch(err){
-      if(err) throw err
-      toast.error('invalid credentials')
+  const { userInfo } = useSelector((state) => state.auth);
+  console.log(userInfo)
+  useEffect(() => {
+    if (userInfo) {
+      navigate("/");
     }
-    
-   
-  
-  }
-  const googleAuth = async () => {
-  try {
-    const authWindow = window.open("http://localhost:8000/auth/google");
-
-    const messageListener = (event) => {
-      if (event.origin === "http://localhost:8000") {
-        const response = event.data;
-         dispatch(setCredentials({ response:response.email }));
-        console.log(response);
-        authWindow.close();
-        window.removeEventListener("message", messageListener);
-        if(response) navigate('/');
+  }, [navigate, userInfo]);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await login({ email, password }).unwrap();
+      if (response.message) {
+        console.log(response)
+        dispatch(setCredentials({ deatils :response.user }));
+        navigate("/");
+        toast.error(response);
+      } else if (response.error) {
+        toast.error("inavlid credintials");
       }
-    };
-    window.addEventListener("message", messageListener);
-    toast.info("login successful")
-  } catch (error) {
-    if (error) throw error;
-    toast.error(error.message);
-  }
-};
+    } catch (err) {
+      if (err) throw err;
+      toast.error("invalid credentials");
+    }
+  };
+  const googleAuth = async () => {
+    try {
+      const authWindow = window.open("http://localhost:8000/auth/google");
+
+      const messageListener = (event) => {
+        if (event.origin === "http://localhost:8000") {
+          const response = event.data;
+          dispatch(setCredentials({ deatils: response.email }));
+          console.log(response);
+          authWindow.close();
+          window.removeEventListener("message", messageListener);
+          if (response) navigate("/");
+        }
+      };
+      window.addEventListener("message", messageListener);
+      toast.info("login successful");
+    } catch (error) {
+      if (error) throw error;
+      toast.error(error.message);
+    }
+  };
 
   return (
     <div className="relative flex flex-col justify-center min-h-screen overflow-hidden ">
       <div className="w-full p-6 m-auto bg-white rounded-md shadow-xl lg:max-w-xl">
-        <h1 className="text-3xl font-semibold text-center text-purple-700 uppercase">
+        <h1 className="text-3xl font-semibold text-center text-blue-700 uppercase">
           Sign in
         </h1>
         <form className="mt-6" onSubmit={handleSubmit}>
@@ -76,7 +77,7 @@ export default function Login() {
             </label>
             <input
               type="email"
-              className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
+              className="block w-full px-4 py-2 mt-2 text-black bg-white border rounded-md focus:border-blue-400 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
@@ -89,12 +90,12 @@ export default function Login() {
             </label>
             <input
               type="password"
-              className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
+              className="block w-full px-4 py-2 mt-2 text-black bg-white border rounded-md focus:border-black-400 focus:ring-black-300 focus:outline-none focus:ring focus:ring-opacity-40"
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
           <div className="mt-6">
-            <button className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-purple-600">
+            <button className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-700 rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600">
               Login
             </button>
           </div>
@@ -106,7 +107,7 @@ export default function Login() {
           <button
             onClick={googleAuth}
             type="button"
-            className="flex items-center justify-center w-full p-2 border border-gray-600 rounded-md focus:ring-2 focus:ring-offset-1 focus:ring-violet-600"
+            className="flex items-center justify-center w-full p-2 border border-gray-600 rounded-md focus:ring-2 focus:ring-offset-1 focus:ring-blue-600"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -122,7 +123,7 @@ export default function Login() {
           {" "}
           Don't have an account?{" "}
           <Link to="/signup">
-            <a href="#" className="font-medium text-purple-600 hover:underline">
+            <a href="#" className="font-medium text-blue-600 hover:underline">
               Sign up
             </a>
           </Link>

@@ -9,6 +9,8 @@ import Homepage from "./pages/Homepage";
 import store from './store';
 import VideoStreaming from "./components/VideoStreaming";
 import WebRTCComponent from "./components/Webtrc";
+import SubscriptionPage from "./pages/SubscriptionPage";
+import VerifiyOtp from "./components/VerifiyOtp";
 
 const router = createBrowserRouter([
   {
@@ -30,6 +32,14 @@ const router = createBrowserRouter([
       {
         path: "/video",
         element: <VideoStreaming />,
+      },
+      {
+        path: "/pro",
+        element: <SubscriptionPage />,
+      },
+      {
+        path: "/verifyotp",
+        element: <VerifiyOtp />,
       },
     ],
   },

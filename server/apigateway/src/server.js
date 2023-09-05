@@ -15,6 +15,7 @@ app.use(cors({
 }));
 app.use("/auth", proxy("http://localhost:8100"));
 app.use("/stream", proxy("http://localhost:8200"));
+app.use("/users", proxy("http://localhost:8300"));
 
 app.listen(process.env.PORTNUMBER, () =>
   console.log(`server started at ${process.env.PORTNUMBER}`)

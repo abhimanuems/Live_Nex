@@ -2,7 +2,6 @@ import express  from 'express';
 import path  from "path"
 import bodyParser  from "body-parser";
 import dotenv from 'dotenv';
-import cors from 'cors'
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,13 +13,6 @@ import session from 'express-session';
 mongoose.connect(process.env.MONGO_URL).then(() => console.log("Connected!"));
 
 const app = express();
-app.use(
-  cors({
-    origin: "http://localhost:8000",
-    methods: "GET,POST,PUT,DELETE",
-    credentials: true,
-  })
-);
 app.use(bodyParser.json());
 app.use(
   session({
