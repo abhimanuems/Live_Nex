@@ -7,7 +7,7 @@ import Loginpage from "./pages/Loginpage";
 import SignupPage from "./pages/Signuppage";
 import Homepage from "./pages/Homepage";
 import store from './store';
-import VideoStreaming from "./components/VideoStreaming";
+import VideoStreamingPage from "./pages/VideoStreamingPage";
 import WebRTCComponent from "./components/Webtrc";
 import SubscriptionPage from "./pages/SubscriptionPage";
 import VerifiyOtp from "./components/VerifiyOtp";
@@ -31,7 +31,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/video",
-        element: <VideoStreaming />,
+        element: <VideoStreamingPage />,
       },
       {
         path: "/pro",

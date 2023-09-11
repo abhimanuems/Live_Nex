@@ -3,6 +3,7 @@ import {
   login,
   Oauth,
   googleCallBack,
+  getUserDetails,
   logout,
 } from "../services/loginServices.js";
 import { signup, getOtp } from "../services/signupService.js";
@@ -10,6 +11,7 @@ import { signup, getOtp } from "../services/signupService.js";
 const router = Router();
 router.post('/login',login);
 router.post('/signup',signup);
+router.post("/details", getUserDetails);
 router.get('/google',Oauth);
 router.get("/google/callback", googleCallBack);
 router.post("/otp",getOtp)
