@@ -8,7 +8,6 @@ dotenv.config({ path: path.join(__dirname, "../.env") });
 
 // for generating jwt token
 const generateToken = (res, userId) => {
-  console.log("eneted here")
   const token = jwt.sign({ userId }, process.env.JWT_SECRET_KEY, {
     expiresIn: "30d",
   });

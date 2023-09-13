@@ -23,7 +23,7 @@ const Header = () => {
     }
   };
   return (
-    <header className="flex items-center justify-between bg-blue-600 p-4">
+    <header className="flex items-center justify-between bg-slate-600 p-4">
       <div className="flex items-center space-x-2">
         <span
           className="text-white font-bold text-lg cursor-pointer"

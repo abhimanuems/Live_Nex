@@ -1,10 +1,15 @@
 import React from 'react'
+import { BsCameraVideo } from "react-icons/bs";
 
 const Slider = () => {
   return (
-    <div className="flex space-x-2 bg-blue-600 p-4">
-      <button className="text-white font-medium">Home</button>
-      <div className="w-2 h-2 bg-white rounded-full"></div>
+    <div className="flex space-x-2 p-4">
+      <div className="flex mt-1 ">
+        <BsCameraVideo />
+      </div>
+      <div>
+        <button className="text-base font-medium">Home</button>
+      </div>
     </div>
   );
 }

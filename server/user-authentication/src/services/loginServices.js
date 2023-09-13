@@ -25,11 +25,9 @@ passport.use(
 );
 //login code
 const login = async (req, res) => {
-  console.log(req.body)
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    console.log('user details is ',user)
     if (!user) res.json({ error: "please create an acccount" });
     if (user) {
       bcrypt
@@ -126,5 +124,19 @@ const logout = (req, res) => {
   }
 }
 
+//retriveing user details
 
-export { login, Oauth, googleCallBack, logout };
+const getUserDetails =async(req,res)=>{
+  const userDetails = await User.findById(req.body.userId).select("-password");
+  if(userDetails){
+    res.status(200).json(userDetails)
+  }
+  else{
+    res.status(400).json("invalid");
+  }
+
+
+}
+
+
+export { login, Oauth, googleCallBack, logout, getUserDetails };

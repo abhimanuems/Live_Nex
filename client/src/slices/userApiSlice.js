@@ -29,6 +29,19 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    razporpay: builder.mutation({
+      query: () => ({
+        url: "http://localhost:8000/users/orders",
+        method: "get",
+      }),
+    }),
+    razporPaySuccess: builder.mutation({
+      query: (data) => ({
+        url: "http://localhost:8000/users/success",
+        method:"post",
+        body:data
+      }),
+    }),
     logout: builder.mutation({
       query: () => ({
         url: "auth/logout",
@@ -38,4 +51,12 @@ export const userApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const { useLoginMutation,useGoogleAuthMutation,useSignupMutation, useLogoutMutation , useOtpMutation} =userApiSlice
+export const {
+  useLoginMutation,
+  useGoogleAuthMutation,
+  useSignupMutation,
+  useLogoutMutation,
+  useOtpMutation,
+  useRazporpayMutation,
+  useRazporPaySuccessMutation,
+} = userApiSlice;

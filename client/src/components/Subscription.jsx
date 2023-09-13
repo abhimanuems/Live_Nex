@@ -3,13 +3,15 @@ import { FaCheck } from "react-icons/fa";
 import axios from 'axios'
 import {useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { useRazporpayMutation } from "../slices/userApiSlice";
+// import dotenv from "dotenv";
+// dotenv.config();
+
 
 const Subscription = () => {
 
 const { userInfo } = useSelector((state) => state.auth);
-
-
-
+const [razorpay] = useRazporpayMutation();
   function loadScript(src) {
     return new Promise((resolve) => {
       const script = document.createElement("script");
@@ -35,14 +37,16 @@ const { userInfo } = useSelector((state) => state.auth);
        return;
      }
 
-     const result = await axios.post("http://localhost:8000/users/orders");
+    //  const result = await axios.get("http://localhost:8000/users/orders");
+    const result = await razorpay().unwrap();
+    console.log("result is ",result)
    
      if (!result) {
       toast.error("Server error. Are you online?");
        return;
      }
 
-     const { amount, id: order_id, currency } = result.data;
+     const { amount, id: order_id, currency } = result;
 
      const options = {
        key: "rzp_test_bLt7yzzH20t8v9",
@@ -95,7 +99,7 @@ const { userInfo } = useSelector((state) => state.auth);
      paymentObject.open();
    }
   return (
-    <div className="bg-white py-12 sm:py-32">
+    <div className="bg-white pt-8">
       <div className="mt-0 mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl sm:text-center">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">

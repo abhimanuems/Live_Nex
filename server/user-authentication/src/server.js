@@ -10,9 +10,11 @@ import router  from "./routes/router.js"
 import mongoose from 'mongoose';
 import passport from 'passport';
 import session from 'express-session';
+import cookieParser from 'cookie-parser';
 mongoose.connect(process.env.MONGO_URL).then(() => console.log("Connected!"));
 
 const app = express();
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(
   session({

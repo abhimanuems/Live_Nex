@@ -7,15 +7,17 @@ import Loginpage from "./pages/Loginpage";
 import SignupPage from "./pages/Signuppage";
 import Homepage from "./pages/Homepage";
 import store from './store';
-import VideoStreaming from "./components/VideoStreaming";
+import VideoStreamingPage from "./pages/VideoStreamingPage";
 import WebRTCComponent from "./components/Webtrc";
 import SubscriptionPage from "./pages/SubscriptionPage";
 import VerifiyOtp from "./components/VerifiyOtp";
+import ErrorPage from "./components/ErrorPage";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+     errorElement: <ErrorPage />,
     children: [
       {
         path: "/",
@@ -31,7 +33,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/video",
-        element: <VideoStreaming />,
+        element: <VideoStreamingPage />,
       },
       {
         path: "/pro",
@@ -48,6 +50,7 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={store}>
+    
     <RouterProvider router={router} />
   </Provider>
 );

@@ -30,18 +30,44 @@ const Body = () => {
       if (error) throw error;
     }
   };
+  const facebook = () => {
+    try {
+      const authWindow = window.open("http://localhost:8000/users/facebookauth");
+
+      const messageListener = (event) => {
+        if (event.origin === "http://localhost:8000") {
+          const response = event.data;
+
+          authWindow.close();
+          window.removeEventListener("message", messageListener);
+          if (response) navigate("/");
+        }
+      };
+      window.addEventListener("message", messageListener);
+    } catch (error) {
+      if (error) throw error;
+    }
+  };
 
   return (
-    <div>
-      <button className="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded m-2 p-2">
+    <div className="bg-white w-5/6 p-4">
+      <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow">
         <Link to="/video">Create Live</Link>
       </button>
+
       <button
-        className="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded m-2 p-2"
+        class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
         onClick={youtube}
       >
         youtube
       </button>
+      <button
+        class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+        onClick={facebook}
+      >
+        facebook
+      </button>
+     
     </div>
   );
 };

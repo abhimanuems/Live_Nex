@@ -6,14 +6,15 @@ const App = () => {
   const navigate = useNavigate();
   useEffect(() => {
     let peerConnection;
-    const socket = io("http://localhost:8200");
-    navigator.mediaDevices.getUserMedia({ video: true,audio:false }).then((stream) => {
+    const socket = io("http://localhost:8200/");
+    navigator.mediaDevices.getUserMedia({ video: true,audio:true }).then((stream) => {
       const videoElement = document.getElementById("video");
       videoElement.srcObject = stream;
 
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
+          console.log(event.data)
           socket.emit("videoFrame", event.data);
         }
       };
@@ -49,7 +50,7 @@ const App = () => {
   return (
     <div className="flex h-screen bg-gray-100">
       <div className="w-9/12">
-        <div className=" w-full h-96 mb-4">
+        <div className=" w-full h-96 mb-4 pt-20 ">
           <video
             className=" w-full h-96 mb-4"
             id="video"
@@ -57,11 +58,11 @@ const App = () => {
             playsInline
           />
         </div>
-        <div className="flex justify-center">
+        <div className="flex justify-center mt-20">
           <button
-            className="bg-red-500 text-white px-4 py-2 rounded-lg mr-4 hover:bg-red-600"
+            className="bg-red-500 text-white px-4 py-2 rounded-lg mr-4 hover:bg-red-600 "
             onClick={() => {
-              console.log("eeter here");
+            
               navigate("/");
             }}
           >
