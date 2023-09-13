@@ -6,8 +6,8 @@ const App = () => {
   const navigate = useNavigate();
   useEffect(() => {
     let peerConnection;
-    const socket = io("http://localhost:8200");
-    navigator.mediaDevices.getUserMedia({ video: true,audio:false }).then((stream) => {
+    const socket = io("http://localhost:8200/");
+    navigator.mediaDevices.getUserMedia({ video: true,audio:true }).then((stream) => {
       const videoElement = document.getElementById("video");
       videoElement.srcObject = stream;
 

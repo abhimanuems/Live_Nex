@@ -19,7 +19,6 @@ const youtube = google.youtube({
   auth: oauth2Client,
 });
 const youtubeAuth = async (req, res) => {
-  console.log("enetered at the youtube auth");
   try {
  const authUrl = oauth2Client.generateAuthUrl({
    access_type: "online",
@@ -32,6 +31,7 @@ const youtubeAuth = async (req, res) => {
   }
 };
 const oauthCallback = async (req, res) => {
+  console.log(req.cookies.jwt)
   try {
     const { code } = req.query;
     const { tokens } = await oauth2Client.getToken(code);
@@ -60,14 +60,18 @@ const liveBroadcast = {
   },
   contentDetails: {
     recordFromStart: true,
-    enableAutoStart: false,
+    enableAutoStart: true,
     monitorStream: {
-      enableMonitorStream: false,
+      enableMonitorStream: true,
     },
   },
   status: {
     privacyStatus: "public",
     selfDeclaredMadeForKids: true,
+  },
+  cdn: {
+    format: "720p",
+    ingestionType: "rtmp",
   },
 };
  function getBroadCastId (){
@@ -81,11 +85,11 @@ const liveBroadcast = {
          console.error(`Error creating live broadcast: ${err}`);
        } else {
          broadcastId = res.data.id;
-         //  console.log(`Broadcast ID: ${broadcastId}`);
+          console.log(`Broadcast ID: ${broadcastId}`);
          //  getIngestionInfo();
        
          getStreamId(broadcastId);
-        //  getRTMPurl(broadcastId);
+         getRTMPurl(broadcastId);
          // You can now use this broadcastId for streaming
        }
      }
@@ -97,8 +101,8 @@ async function getStreamId(broadcastId){
     part: "id,contentDetails,snippet",
     id: broadcastId,
   }).then((res)=>{
-    console.log("response is ",res);
-    console.log(res.data.items)
+    console.log("broadcast id is  response ",res)
+    console.log("bound stream id is  items is ",res?.data?.items)
   }).catch((err)=> {throw err})
 
   // Extract the boundStreamId
@@ -108,47 +112,82 @@ async function getStreamId(broadcastId){
 
 
 
-async function getRTMPurl(broadcastId) {
+// async function getRTMPurl(broadcastId) {
 
-  youtube.liveBroadcasts.bind(
-    {
-      part: "id,contentDetails,snippet",
-      id: broadcastId,
-    },
-    (err, res) => {
-      if (err) {
-        console.error(`Error binding broadcast to stream: ${err}`);
-      } else {
+//   youtube.liveBroadcasts.bind(
+//     {
+//       part: "id,contentDetails,snippet",
+//       id: broadcastId,
+//     },
+//     (err, res) => {
+//       if (err) {
+//         console.error(`Error binding broadcast to stream: ${err}`);
+//       } else {
+//         console.log("live broadcast bind rtmp url is ",res)
        
-       const ingestionInfo =
-         res.data.contentDetails.monitorStream?.boundStreamId;
-         console.log("ingestuon info is ",ingestionInfo)
+//        const ingestionInfo =
+//          res.data.contentDetails.monitorStream?.boundStreamId;
+//          console.log("ingestuon info is ",ingestionInfo)
       
 
-        // Now you need to use the boundStreamId to get the RTMP URL and stream name
-        // youtube.liveStreams.list(
-        //   {
-        //     part: "cdn",
-        //     id: ingestionInfo,
-        //     filter: "id",
-        //   },
-        //   (err, res) => {
-        //     if (err) {
-        //       console.error(`Error getting RTMP URL and stream name: ${err}`);
-        //     } else {
-        //       console.log("result from the live stream list",res);
-        //         const snippet = res.data?.items[0]?.cdn;
-        //         const rtmpUrl = res?.cdn?.ingestionInfo?.ingestionAddress;
-        //         const streamName = snippet?.cdn?.ingestionInfo?.streamName;
+//         //Now you need to use the boundStreamId to get the RTMP URL and stream name
+//         if(ingestionInfo)
+//         youtube.liveStreams.list(
+//           {
+//             part: "cdn",
+//             id: ingestionInfo,
+//             filter: "id",
+//           },
+//           (err, res) => {
+//             if (err) {
+//               console.error(`Error getting RTMP URL and stream name: ${err}`);
+//             } else {
+//               console.log("result from the live stream list",res);
+//                 const snippet = res.data?.items[0]?.cdn;
+//                 const rtmpUrl = res?.cdn?.ingestionInfo?.ingestionAddress;
+//                 const streamName = snippet?.cdn?.ingestionInfo?.streamName;
 
-        //         console.log("RTMP URL:", rtmpUrl);
-        //     }
-        //   }
-        // );
-      }
+//                 console.log("RTMP URL:", rtmpUrl);
+//             }
+//           }
+//         );
+//       }
+//     }
+//   );
+// }
+
+async function getRTMPurl(broadcastId) {
+  try {
+    // Bind the broadcast to a stream
+    const bindResponse = await youtube.liveBroadcasts.bind({
+      part: "id,snippet",
+      id: broadcastId,
+    });
+
+    const boundStreamId = bindResponse.data.snippet.boundStreamId;
+
+    if (boundStreamId) {
+      // Get the RTMP URL and stream name
+      const listStreamsResponse = await youtube.liveStreams.list({
+        part: "cdn",
+        id: boundStreamId,
+      });
+
+      const rtmpUrl =
+        listStreamsResponse.data.items[0]?.cdn?.ingestionInfo?.ingestionAddress;
+      const streamName =
+        listStreamsResponse.data.items[0]?.cdn?.ingestionInfo?.streamName;
+
+      console.log("RTMP URL:", rtmpUrl);
+      console.log("Stream Name:", streamName);
+    } else {
+      console.error("No bound stream found.");
     }
-  );
+  } catch (err) {
+    console.error(`Error getting RTMP URL: ${err}`);
+  }
 }
+
 
 
 

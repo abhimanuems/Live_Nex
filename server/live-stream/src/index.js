@@ -21,9 +21,8 @@ try {
     .inputFormat("mp4") // Specify the input format (e.g., mp4)
     .videoCodec("libx264") // Specify the video codec for output
     .outputFormat("flv")
-    .output(
-      "rtmps://live-api-s.facebook.com:443/rtmp/122103048620032468?s_asc=1&s_bl=1&s_oil=2&s_psm=1&s_pub=1&s_sw=0&s_tids=1&s_vt=api-s&a=AbywRtSGDM6OVZcV"
-    ) // Specify the output video file path
+    .output("rtmp://a.rtmp.youtube.com/live2/uhu2-vje2-3dau-c0xb-5e13")
+
     .on("end", () => {
       console.log("Video conversion finished");
     })

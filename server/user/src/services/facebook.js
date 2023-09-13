@@ -25,6 +25,7 @@ const facebook =async(req,res)=>{
 }
 const oauthCallbackFB = async (req, res) => {
 
+  console.log("jwt ", console.log(req.cookies.jwt));
     authorizationCode = req.query.code;
     if (!authorizationCode) {
       return res.status(400).send("Authorization code missing.");

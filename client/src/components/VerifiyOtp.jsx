@@ -86,7 +86,7 @@ useEffect(() => {
               <p>Email Verification</p>
             </div>
             <div className="flex flex-row text-sm font-medium text-gray-400">
-              <p>We have sent a code to your email ba**@dipainhouse.com</p>
+              <p>We have sent a code to your email {userDetails.email}</p>
             </div>
           </div>
 
