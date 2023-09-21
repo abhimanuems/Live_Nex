@@ -5,10 +5,10 @@ const Slider = () => {
   return (
     <div className="flex space-x-2 p-4">
       <div className="flex mt-1 ">
-        <BsCameraVideo />
+        <BsCameraVideo style={{color:"white",fontSize:"25px"}} />
       </div>
       <div>
-        <button className="text-base font-medium">Home</button>
+        <button className="text-base text-white font-medium mt-1">Home</button>
       </div>
     </div>
   );

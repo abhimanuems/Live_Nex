@@ -8,7 +8,8 @@ import "react-toastify/dist/ReactToastify.css";
 function App() {
   return <>
   <ToastContainer/>
-  <Outlet/></>;
+  <Outlet/>
+  </>;
 }
 
 export default App;

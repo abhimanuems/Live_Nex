@@ -1,73 +1,41 @@
-import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect ,useState} from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+ import {
+   useSubscriptionMutation,
+ } from "../slices/userApiSlice";
+import Destination from "./Destination";
+ 
+
 
 const Body = () => {
   const navigate = useNavigate();
+   const [pro, setPro] = useState();
   const { userInfo } = useSelector((state) => state.auth);
+  const [subscribe] = useSubscriptionMutation();
   useEffect(() => {
     if (!userInfo) {
       navigate("/login");
     }
   }, [navigate, userInfo]);
-  const youtube = () => {
-    try {
-      const authWindow = window.open("http://localhost:8000/users/youtubeAuth");
 
-      const messageListener = (event) => {
-        if (event.origin === "http://localhost:8000") {
-          const response = event.data;
-
-          authWindow.close();
-          window.removeEventListener("message", messageListener);
-          if (response) navigate("/");
-        }
-      };
-      window.addEventListener("message", messageListener);
-    } catch (error) {
-      if (error) throw error;
+  useEffect(() => {
+    const isSubscribed = subscribe().unwrap();
+    if (isSubscribed) {
+      setPro(true);
+    } else {
+      setPro(false);
     }
-  };
-  const facebook = () => {
-    try {
-      const authWindow = window.open("http://localhost:8000/users/facebookauth");
-
-      const messageListener = (event) => {
-        if (event.origin === "http://localhost:8000") {
-          const response = event.data;
-
-          authWindow.close();
-          window.removeEventListener("message", messageListener);
-          if (response) navigate("/");
-        }
-      };
-      window.addEventListener("message", messageListener);
-    } catch (error) {
-      if (error) throw error;
-    }
-  };
+  }, []);
+ 
+  const handleModal =()=>{
+    return true
+  }
 
   return (
     <div className="bg-white w-5/6 p-4">
-      <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow">
-        <Link to="/video">Create Live</Link>
-      </button>
-
-      <button
-        class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
-        onClick={youtube}
-      >
-        youtube
-      </button>
-      <button
-        class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
-        onClick={facebook}
-      >
-        facebook
-      </button>
-     
+      <p className="font-semibold text-[#576CBC] text-2xl p-2 m-2">Streams</p>
+      <Destination onClick={handleModal} />
     </div>
   );
 };

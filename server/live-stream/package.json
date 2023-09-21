@@ -17,7 +17,10 @@
     "express-session": "^1.17.3",
     "ffmpeg-static": "^5.2.0",
     "fluent-ffmpeg": "^2.1.2",
-    "socket.io": "^4.7.2"
+    "jsonwebtoken": "^9.0.2",
+    "node-media-server": "^2.6.2",
+    "socket.io": "^4.7.2",
+    "socketio-jwt": "^4.6.2"
   },
   "type": "module",
   "devDependencies": {

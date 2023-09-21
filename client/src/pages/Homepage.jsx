@@ -10,7 +10,7 @@ const Homepage = () => {
        <Header />
      </div>
      <div className="flex">
-       <div className=" w-1/6  h-screen bg-slate-400">
+       <div className=" w-1/6  h-screen bg-[#19376D]">
          <Slider />
        </div>
 

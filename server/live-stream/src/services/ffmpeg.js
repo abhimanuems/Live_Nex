@@ -1,54 +1,121 @@
-// import child_process from "child_process";
+export const inputSettings = ["-i", "-", "-v", "error"];
 
-// const streamToYouTube = (chunk, streamKey) => {
-//   console.log("enter here");
-//   // YouTube RTMP URL (update with your stream key)
-//   const youtubeRtmpUrl = `rtmp://a.rtmp.youtube.com/live2/${streamKey}`;
+export const youtubeSettings = (youtube) => {
+  if (youtube && youtube !== "undefined") {
+    return [
+      // video codec config: low latency, adaptive bitrate
+      "-c:v",
+      "libx264",
+      "-preset",
+      "veryfast",
+      "-tune",
+      "zerolatency",
+      "-g:v",
+      "60",
 
-//   // Define the ffmpeg command with the necessary arguments
-//   const ffmpegArgs = [
-//     "-re", // Read input at native frame rate
-//     "-i",
-//     `${chunk}`, // Input source (your video file or source)
-//     "-f",
-//     "flv", // Output format is FLV
-//     "-c:v",
-//     "libx264", // Video codec
-//     "-pix_fmt",
-//     "yuv420p", // Pixel format
-//     "-c:a",
-//     "aac", // Audio codec
-//     "-ar",
-//     "44100", // Audio sample rate
-//     "-b:a",
-//     "128k", // Audio bitrate
-//     "-vb",
-//     "400k", // Video bitrate
-//     "-maxrate",
-//     "3000k", // Max video bitrate
-//     "-preset",
-//     "ultrafast", // Preset for encoding speed
-//     "-r",
-//     "30", // Frame rate
-//     "-g",
-//     "30",
-//     youtubeRtmpUrl, // YouTube RTMP URL
-//   ];
+      // audio codec config: sampling frequency (11025, 22050, 44100), bitrate 64 kbits
+      "-c:a",
+      "aac",
+      "-strict",
+      "-2",
+      "-ar",
+      "44100",
+      "-b:a",
+      "64k",
 
-//   //   // Spawn the ffmpeg process with the provided arguments
-//   const ffmpeg_process = child_process.spawn("ffmpeg", ffmpegArgs);
+      //force to overwrite
+      "-y",
 
-//   return ffmpeg_process;
-// };
+      // used for audio sync
+      "-use_wallclock_as_timestamps",
+      "1",
+      "-async",
+      "1",
+
+      "-f",
+      "flv",
+      youtube,
+    ];
+  } else return [];
+};
+
+export const facebookSettings = (facebook) => {
+  if (facebook && facebook !== "undefined") {
+    return [
+      // video codec config: low latency, adaptive bitrate
+      "-c:v",
+      "libx264",
+      "-preset",
+      "veryfast",
+      "-tune",
+      "zerolatency",
+
+      // audio codec config: sampling frequency (11025, 22050, 44100), bitrate 64 kbits
+      "-c:a",
+      "aac",
+      "-strict",
+      "-2",
+      "-ar",
+      "44100",
+      "-b:a",
+      "64k",
+
+      //force to overwrite
+      "-y",
+
+      // used for audio sync
+      "-use_wallclock_as_timestamps",
+      "1",
+      "-async",
+      "1",
+
+      "-f",
+      "flv",
+      facebook,
+    ];
+  } else return [];
+};
+
+const customRtmpSettings = (customRTMP) => {
+  if (customRTMP && customRTMP !== "undefined") {
+    return [
+      // video codec config: low latency, adaptive bitrate
+      "-c:v",
+      "libx264",
+      "-preset",
+      "veryfast",
+      "-tune",
+      "zerolatency",
+
+      // audio codec config: sampling frequency (11025, 22050, 44100), bitrate 64 kbits
+      "-c:a",
+      "aac",
+      "-strict",
+      "-2",
+      "-ar",
+      "44100",
+      "-b:a",
+      "64k",
+
+      //force to overwrite
+      "-y",
+
+      // used for audio sync
+      "-use_wallclock_as_timestamps",
+      "1",
+      "-async",
+      "1",
+
+      //'-filter_complex
+      //'-strict', 'experimental',
+      "-bufsize",
+      "1000",
+      "-f",
+      "flv",
+      customRTMP,
+    ];
+  } else return [];
+};
 
 
-// const ffmpegProcess = streamToYouTube(videoSource, youtubeStreamKey);
 
-// // Handle the ffmpeg process as needed (e.g., listen for events)
-// ffmpegProcess.on("exit", (code, signal) => {
-//   console.log(`ffmpeg process exited with code ${code} and signal ${signal}`);
-// });
-
-
-
-// export default ffmpegProcess;
