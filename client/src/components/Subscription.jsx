@@ -1,17 +1,34 @@
-import React from 'react'
+import React,{useState,useEffect} from 'react'
 import { FaCheck } from "react-icons/fa";
-import axios from 'axios'
 import {useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { useRazporpayMutation } from "../slices/userApiSlice";
-// import dotenv from "dotenv";
-// dotenv.config();
+import { useRazporpayMutation ,useRazporPaySuccessMutation} from "../slices/userApiSlice";
+import {
+  useSubscriptionMutation,
+} from "../slices/userApiSlice";
+
+
+
 
 
 const Subscription = () => {
 
 const { userInfo } = useSelector((state) => state.auth);
 const [razorpay] = useRazporpayMutation();
+const [razorpaySuccess] = useRazporPaySuccessMutation();
+const [subscribe] = useSubscriptionMutation();
+  const [pro, setPro] = useState();
+
+
+    useEffect(() => {
+      const isSubscribed = subscribe().unwrap();
+      if (isSubscribed) {
+        setPro(true);
+      } else {
+        setPro(false);
+      }
+      console.log(isSubscribed);
+    }, []);
   function loadScript(src) {
     return new Promise((resolve) => {
       const script = document.createElement("script");
@@ -28,17 +45,23 @@ const [razorpay] = useRazporpayMutation();
 
 
    async function displayRazorpay() {
+    if(pro){
+      toast.info("you have already subscribed")
+      return
+    }
+    
      const res = await loadScript(
        "https://checkout.razorpay.com/v1/checkout.js"
      );
 
      if (!res) {
-       alert("Razorpay SDK failed to load. Are you online?");
+       toast.info("Razorpay SDK failed to load. Are you online?");
        return;
      }
 
     //  const result = await axios.get("http://localhost:8000/users/orders");
     const result = await razorpay().unwrap();
+
     console.log("result is ",result)
    
      if (!result) {
@@ -58,7 +81,7 @@ const [razorpay] = useRazporpayMutation();
        order_id: order_id,
        handler: async function (response) {
         
-        let email 
+        let email ;
         if(userInfo.deatils.email){
           email = userInfo.deatils.email;
         }
@@ -73,12 +96,15 @@ const [razorpay] = useRazporpayMutation();
            razorpaySignature: response.razorpay_signature,
            email,
          }; 
+
+    
     
 
-         const result = await axios.post(
-           "http://localhost:8000/users/success",
-           data
-         );
+        //  const result = await axios.post(
+        //    "http://localhost:8000/users/success",
+        //    data
+        //  );
+         const result = await razorpaySuccess(data).unwrap();
            if (result.msg) toast.info("payment successful");
            if (result.msg_error) toast.error("payment failure");
        },

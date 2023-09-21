@@ -1,101 +1,80 @@
 import express from "express";
+import cors from "cors";
 import path from "path";
 import dotenv from "dotenv";
-import { fileURLToPath } from "url";
+import { spawn } from "child_process";
 import { Server } from "socket.io";
-import child_process from "child_process";
-import ffmpeg from "fluent-ffmpeg";
-import ffmpegPath from "ffmpeg-static";
-import { Readable } from 'stream'; 
-import formatAsFLVPacket from '../src/services/convertingRTMP.js'
+import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, "../.env") });
+import verifyToken from '../src/middileware/auth.js'
+import {
+  youtubeSettings,
+  facebookSettings,
+  inputSettings,
+} from "./services/ffmpeg.js";
 const app = express();
-const io = new Server(8200);
+app.use(cors());
+app.use(express.json({ limit: "200mb" }));
+app.use(
+  express.urlencoded({ limit: "200mb", extended: true, parameterLimit: 50000 })
+);
 
-const desiredWidth = 640;
-const desiredHeight = 480;
-
-io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-  socket.on("videoData", (data) => {
-  });
-  socket.on("dataFromClient", (data) => {
-    console.log("Data received from client:", data);
-  });
-    socket.on("videoFrame", (data) => {
-      const formattedData = formatAsFLVPacket(data);
-     
-       handleVideoFrame(formattedData);
-    });
-
-  socket.on("offer", (data) => {
-    socket.broadcast.emit("offer", data);
-  });
-
-  socket.on("answer", (data) => {
-    socket.broadcast.emit("answer", data);
-  });
-
-  socket.on("ice-candidate", (data) => {
-    console.log("Received ice candidate:", data);
-    socket.broadcast.emit("ice-candidate", data);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
-  });
+const PORT = process.env.PORTNUMBER
+const WS_PORT = process.env.PORT
+app.listen(PORT, () => {
+  console.log("Application started on port ", PORT);
 });
 
+const io = new Server(WS_PORT, {
+  cors: {
+    origin: "*",
+  },
+});
+
+io.use(verifyToken);
+io.on("connection", (socket) => {
+  const rtmpUrlYoutube = socket.handshake.query.rtmpUrlYoutube;
+  const rtmpUrlfb = socket.handshake.query.rtmUrlFaceBook;
+  console.log("rtmp url of youtube", rtmpUrlfb);
 
 
-function handleVideoFrame(data) {
-  try {
- 
-   const dataStream = new Readable({
-     read(size) {
-      
-       if (data.length === 0) {
-        console.log("eneterd at the zero size !")
-        //  this.push(null); 
-       } else {
-         let chunk = data.slice(0, size);
-         this.push(chunk);
-         data = data.slice(size);
-       }
-     },
-   });
+  const ffmpegInput = inputSettings.concat(
+    //youtubeSettings(rtmpUrlYoutube)
+    facebookSettings(rtmpUrlfb),
+  );
+  const ffmpeg = spawn("ffmpeg", ffmpegInput);
 
-    const ffStreamYouTube = ffmpeg()
-      .setFfmpegPath(ffmpegPath)
-      .input(dataStream)
-      .inputFormat("bin")
-      // .inputFPS(30)
-      .videoFilters(`scale=${desiredWidth}:${desiredHeight}`)
-      .videoCodec("libx264")
-      .outputFormat("flv")
-      .output("rtmp://a.rtmp.youtube.com/live2/2hfb-3dhu-89kq-cskw-2cqe")
-      .on("end", () => {
-        console.log("YouTube streaming finished");
-      })
-      .on("error", (err) => {
-        console.error("Error:", err.message);
-      });
+  ffmpeg.on("start", (command) => {
+    console.log("FFmpeg command:", command);
+  })
 
-    ffStreamYouTube.run();
+  
+  ffmpeg.on("close", (code, signal) => {
+    console.log(
+      "FFmpeg child process closed, code " + code + ", signal " + signal
+    );
 
-    ffStreamYouTube
-      .on("start", (command) => {
-        console.log("FFmpeg command:", command);
-      })
-      .on("stderr", (stderrLine) => {
-        console.log("FFmpeg stderr:", stderrLine);
-      });
-  } catch (error) {
-    console.log(error.message);
-    throw error;
-  }
-}
+  });
 
+  ffmpeg.stdin.on("error", (e) => {
+    console.log("FFmpeg STDIN Error", e);
+  });
+
+
+  ffmpeg.stderr.on("data", (data) => {
+    console.log("FFmpeg STDERR:", data.toString());
+  });
+
+  socket.on("message", (msg) => {
+    ffmpeg.stdin.write(msg);
+  });
+
+  socket.conn.on("close", (e) => {
+    console.log("kill: SIGINT");
+    ffmpeg.kill("SIGINT");
+  });
+
+});
 

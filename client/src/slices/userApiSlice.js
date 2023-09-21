@@ -38,8 +38,51 @@ export const userApiSlice = apiSlice.injectEndpoints({
     razporPaySuccess: builder.mutation({
       query: (data) => ({
         url: "http://localhost:8000/users/success",
-        method:"post",
-        body:data
+        method: "post",
+        body: data,
+      }),
+    }),
+    facebookAccessToken: builder.mutation({
+      query: () => ({
+        url: "http://localhost:8000/users/fbtoken",
+        method: "get",
+      }),
+    }),
+    facebookGetComments: builder.mutation({
+      query: () => ({
+        url: "http://localhost:8000/users/fbcomments",
+        method: "get",
+      }),
+    }),
+    youtubeComments: builder.mutation({
+      query: () => ({
+        url: "http://localhost:8000/users/youtubecomments",
+        method: "get",
+      }),
+    }),
+    rtmpUrlFB: builder.mutation({
+      query: () => ({
+        url: "http://localhost:8000/users/rtmpFB",
+        method: "get",
+      }),
+    }),
+    rtmpUrlYoutube: builder.mutation({
+      query: () => ({
+        url: "http://localhost:8000/users/rtmpyoutube",
+      }),
+      method: "get",
+    }),
+    subscription: builder.mutation({
+      query: () => ({
+        url: "http://localhost:8000/users/subscription",
+        method: "get",
+      }),
+    }),
+    youtubeToken: builder.mutation({
+      query: (data) => ({
+        url: "http://localhost:8000/users/youtubeaccesstoken",
+        method: "post",
+        body: data,
       }),
     }),
     logout: builder.mutation({
@@ -59,4 +102,11 @@ export const {
   useOtpMutation,
   useRazporpayMutation,
   useRazporPaySuccessMutation,
+  useFacebookAccessTokenMutation,
+  useRtmpUrlFBMutation,
+  useRtmpUrlYoutubeMutation,
+  useSubscriptionMutation,
+  useFacebookGetCommentsMutation,
+  useYoutubeTokenMutation,
+  useYoutubeCommentsMutation
 } = userApiSlice;
