@@ -37,7 +37,6 @@ const protect = async (req, res, next) => {
   }
 };
 
-
 const adminAuthProtect = async (req, res, next) => {
   const token = req.cookies.adminjwt;
 

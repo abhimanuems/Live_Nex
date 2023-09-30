@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import User from "../models/userModels.js";
+import { response } from "express";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, "../../.env") });
@@ -28,7 +29,7 @@ const razorpay = async (req, res) => {
     res.json(order);
   } catch (err) {
     if (err) throw err;
-    console.log(err.message);
+    console.error(err.message);
     res.status(500).json({ error: err.message });
   }
 };
@@ -80,7 +81,7 @@ const successFunction = async (req, res) => {
       paymentId: razorpayPaymentId,
     });
   } catch (error) {
-    console.log(error.message);
+    console.error(error.message);
     res.status(500).send(error);
   }
 };
@@ -102,4 +103,42 @@ const checkSubscription =async(req,res)=>{
   }
 }
 
-export { razorpay, successFunction, checkSubscription };
+const submitTickets = async(req,res)=>{
+  try{
+    await User.updateOne({_id:req.userEmail}, { $push: { tickets: req.body } })
+      .then((response) => {
+        res.status(200).json({ message: "successful submit the ticket" });
+      })
+      .catch((err) => {
+        res.status(400).json({ error: "ticket failed" });
+      });
+    
+  }catch(err){
+    console.error("error at submitting tickets");
+    res.status(400).json({err})
+  }
+}
+
+const getTicketData =async (req,res)=>{
+  try{
+    const userId = req.userEmail;
+    User.find({_id:userId},{"tickets":1,"_id":0}).then((response)=>{
+      res.status(200).json({ response: response[0].tickets });
+    }).catch((err)=>{
+      res.status(400).json({err})
+    })
+
+
+  }catch(err){
+    console.error("error at fetching tickets",err);
+    res.status(400).json({error:"error at fetching datas"})
+  }
+}
+
+export {
+  razorpay,
+  successFunction,
+  checkSubscription,
+  submitTickets,
+  getTicketData,
+};

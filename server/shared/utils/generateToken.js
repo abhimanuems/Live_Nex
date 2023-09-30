@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import path from "path";
 import { fileURLToPath } from "url";
-import dotenv from "dotenv"
+import dotenv from "dotenv";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, "../.env") });
@@ -19,8 +19,8 @@ const generateToken = (res, userId) => {
   });
 };
 
-const generateAdminToken = (res,id)=>{
-  const token = jwt.sign({id}, process.env.JWT_SECRET_KEY, {
+const generateAdminToken = (res, id) => {
+  const token = jwt.sign({ id }, process.env.JWT_SECRET_KEY, {
     expiresIn: "30d",
   });
   res.cookie("adminjwt", token, {
@@ -29,6 +29,6 @@ const generateAdminToken = (res,id)=>{
     sameSite: "strict",
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
-}
+};
 export default generateToken;
 export { generateAdminToken };

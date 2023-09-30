@@ -33,7 +33,7 @@ export const youtubeSettings = (youtube) => {
       "1",
 
       "-f",
-      "flv",
+      "flv",                  
       youtube,
     ];
   } else return [];
@@ -71,7 +71,7 @@ export const facebookSettings = (facebook) => {
 
       "-f",
       "flv",
-      facebook,
+      facebook, 
     ];
   } else return [];
 };

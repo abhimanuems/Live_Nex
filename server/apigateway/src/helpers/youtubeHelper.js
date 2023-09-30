@@ -7,13 +7,19 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, "../../.env") });
 import User from "../models/userModels.js";
 
-
-const getBroadCastId = async (accessToken, id, youtube) => {
+const getBroadCastId = async (
+  response,
+  accessToken,
+  id,
+  youtube,
+  title,
+  description
+) => {
   try {
     const liveBroadcast = {
       snippet: {
-        title: "My Live Stream",
-        description: "Description of your live stream",
+        title: title,
+        description: description,
         scheduledStartTime: `${new Date().toISOString()}`,
       },
       contentDetails: {
@@ -26,7 +32,7 @@ const getBroadCastId = async (accessToken, id, youtube) => {
       },
       status: {
         privacyStatus: "public",
-        selfDeclaredMadeForKids: true,
+        selfDeclaredMadeForKids: false,
       },
       cdn: {
         format: "720p",
@@ -42,24 +48,24 @@ const getBroadCastId = async (accessToken, id, youtube) => {
       async (err, res) => {
         if (err) {
           console.error(`Error creating live broadcast: ${err}`);
+          response.status(403).json({ error: err });
         } else {
           const broadcastId = await res.data.id;
-        
 
-        await  User.updateOne(
+          await User.updateOne(
             { _id: id },
             {
               $set: {
                 "youtube.broadcastId": broadcastId,
               },
             }
-          ).then((res)=>{
-            console.log("broadcastid is database submision is ",res);
-          })
+          ).then((res) => {
+            console.log("broadcastid is database submision is ", res);
+          });
 
           const stream_data = createYoutubeStreams(
-            "test",
-            "test",
+            title,
+            description,
             accessToken,
             broadcastId,
             id
@@ -79,58 +85,65 @@ const createYoutubeStreams = async (
   broadcastId,
   userId
 ) => {
-  const data = {
-    snippet: {
-      title: youtubeBroadcastTitle,
-      description: youtubeBroadcastDescription,
-    },
-    cdn: {
-      format: "",
-      ingestionType: "rtmp",
-      frameRate: "variable",
-      resolution: "variable",
-    },
-    contentDetails: { isReusable: true },
-  };
+  try {
+    const data = {
+      snippet: {
+        title: youtubeBroadcastTitle,
+        description: youtubeBroadcastDescription,
+      },
+      cdn: {
+        format: "",
+        ingestionType: "rtmp",
+        frameRate: "variable",
+        resolution: "variable",
+      },
+      contentDetails: { isReusable: true },
+    };
 
-  const config = {
-    headers: {
-      Authorization: `Bearer ${authorizeToken}`,
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-  };
+    const config = {
+      headers: {
+        Authorization: `Bearer ${authorizeToken}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    };
 
-  const stream = await axios
-    .post(
-      `https://youtube.googleapis.com/youtube/v3/liveStreams?part=snippet%2Ccdn%2CcontentDetails%2Cstatus&key=${process.env.GOOGLEAPIKEY}`,
-      data,
-      config
-    )
-    .then(async (res) => {
-   
-      const { ingestionAddress, streamName } = res.data.cdn.ingestionInfo;
-      const id = res.data.id;
-      
-      const youtubeRTMURL = ingestionAddress + "/" + streamName;
-      await User.updateOne(
-        { _id: userId },
-        { $set: { "youtube.rtmpUrl": youtubeRTMURL } }
-      );
-      bindYoutubeBroadcastToStream(broadcastId, id, authorizeToken,userId);
-      return {
-        id: res.data.id,
-        youtubeDestinationUrl: ingestionAddress + "/" + streamName,
-      };
-    })
-    .catch((error) => {
-      console.error(error.message);
-    });
+    const stream = await axios
+      .post(
+        `https://youtube.googleapis.com/youtube/v3/liveStreams?part=snippet%2Ccdn%2CcontentDetails%2Cstatus&key=${process.env.GOOGLEAPIKEY}`,
+        data,
+        config
+      )
+      .then(async (res) => {
+        const { ingestionAddress, streamName } = res.data.cdn.ingestionInfo;
+        const id = res.data.id;
+        console.log(
+          "ingestionAddress, streamName",
+          streamName,
+          ingestionAddress
+        );
 
-  return stream;
+        const youtubeRTMURL = ingestionAddress + "/" + streamName;
+        console.log("youtube rmtp url", youtubeRTMURL);
+        await User.updateOne(
+          { _id: userId },
+          { $set: { "youtube.rtmpUrl": youtubeRTMURL } }
+        );
+        bindYoutubeBroadcastToStream(broadcastId, id, authorizeToken, userId);
+        return {
+          id: res.data.id,
+          youtubeDestinationUrl: ingestionAddress + "/" + streamName,
+        };
+      })
+      .catch((error) => {
+        console.error(error.message);
+      });
+
+    return stream;
+  } catch (err) {
+    console.error(err.message);
+  }
 };
-
-
 
 const bindYoutubeBroadcastToStream = async (
   youtubeBroadcastId,
@@ -151,61 +164,30 @@ const bindYoutubeBroadcastToStream = async (
       {},
       config
     );
-     const liveChatId = response.data.snippet.liveChatId;
-
-     console.log("Live Chat ID: from binde streaming", liveChatId);
-    //await startStreaming(youtubeBroadcastId, youtubeAccessToken);
-    startStreaming(youtubeBroadcastId, youtubeAccessToken,userId);
+    const liveChatId = response.data.snippet.liveChatId;
+    await User.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          "youtube.liveChatId": liveChatId,
+        },
+      }
+    );
+    console.log("Live Chat ID: from binde streaming", liveChatId);
+    await startStreaming(youtubeBroadcastId, youtubeAccessToken, userId);
 
     return response.data;
   } catch (error) {
-    console.error("error message from  bind broadcast",error.message);
-    throw error; 
+    console.error("error message from  bind broadcast", error.message);
+    throw error;
   }
 };
 
-
-
-
-const startStreaming = async (youtubeBroadcastId, youtubeAccessToken,userId) => {
-
-
-
- const config = {
-   headers: {
-     Authorization: `Bearer ${youtubeAccessToken}`,
-     Accept: "application/json",
-   },
- };
-
- await axios
-   .post(
-     `https://youtube.googleapis.com/youtube/v3/liveBroadcasts/transition?broadcastStatus=live&id=${youtubeBroadcastId}&part=id&part=status&key=${process.env.GOOGLEAPIKEY}`,
-     config
-   )
-   .then(async(res) => {
-     const liveChatId = response.data.snippet.liveChatId;
-      await User.updateOne(
-        { _id: userId },
-        { $set: { "youtube.liveChatId": liveChatId } }
-      );
-
-   })
-   .catch((err) => {
-     console.log(err.response.data.error.errors);
-   });
-
-console.log(  "youtube going live" );
-};
-
-// Usage:
-// Assuming you have the youtubeBroadcastId and youtubeAccessToken
-// Call startStreaming(youtubeBroadcastId, youtubeAccessToken) to start the stream.
-
-
-
-
-const stopStreaming = async (youtubeBroadcastId, youtubeAccessToken) => {
+const startStreaming = async (
+  youtubeBroadcastId,
+  youtubeAccessToken,
+  userId
+) => {
   const config = {
     headers: {
       Authorization: `Bearer ${youtubeAccessToken}`,
@@ -213,33 +195,119 @@ const stopStreaming = async (youtubeBroadcastId, youtubeAccessToken) => {
     },
   };
 
-  try {
-    const response = await axios.post(
-      `https://youtube.googleapis.com/youtube/v3/liveBroadcasts/transition?broadcastStatus=complete&id=${youtubeBroadcastId}&part=snippet%2Cstatus&key=${process.env.GOOGLEAPIKEY}`,
-      {},
+  await axios
+    .post(
+      `https://youtube.googleapis.com/youtube/v3/liveBroadcasts/transition?broadcastStatus=live&id=${youtubeBroadcastId}&part=id&part=status&key=${process.env.GOOGLEAPIKEY}`,
       config
-    );
+    )
+    .then(async (res) => {
+      const liveChatId = res.data.snippet.liveChatId;
+      await User.updateOne(
+        { _id: userId },
+        { $set: { "youtube.liveChatId": liveChatId } }
+      );
+    })
+    .catch((err) => {
+      console.log(err.response.data.error.errors);
+    });
 
-  } catch (error) {
-    console.error("error from create stream",error.message);
-    throw error;
+  console.log("youtube going live");
+};
+
+const stopStreaming = async (youtubeBroadcastId, youtubeAccessToken, res) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${youtubeAccessToken}`,
+      Accept: "application/json",
+    },
+  };
+
+  axios
+    .post(
+      `https://youtube.googleapis.com/youtube/v3/liveBroadcasts/transition?broadcastStatus=complete&id=${youtubeBroadcastId}&part=snippet%2Cstatus&key=${process.env.GOOGLE_API_KEY}`,
+      config
+    )
+    .then((response) => {
+      return response;
+    })
+    .catch((err) => {
+      console.log(err.response.data);
+      res.status(400).json({ data: err.response.data });
+    });
+};
+
+const getLiveChat = async (liveChatId, accessToken) => {
+  try {
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/json",
+    };
+    const part = "id,snippet,authorDetails";
+
+    const chats = axios
+      .get(
+        `https://youtube.googleapis.com/youtube/v3/liveChat/messages?key=${process.env.GOOGLEAPIKEY}&liveChatId=${liveChatId}&part=${part}`,
+        {
+          headers: headers,
+        }
+      )
+      .then((response) => {
+        console.log("Live chat from YouTube:", response?.data);
+        console.log(
+          "chat us ",
+          response?.data?.items[0]?.snippet?.displayMessage
+        );
+        console.log(
+          "chat us ",
+          response?.data?.items[0]?.authorDetails?.displayName
+        );
+        return response?.data;
+      })
+      .catch((error) => {
+        console.error("Error fetching live chat:", error);
+      });
+    return chats;
+  } catch (err) {
+    console.error("Error retieving  comment:", err.response?.data?.error);
   }
 };
 
-const getLiveChat =async (liveChatId)=>{
-  try{
- const response =
-   await axios.get(`https://www.googleapis.com/youtube/v3/liveChat/messages?part=snippet%2CauthorDetails&liveChatId=${liveChatId}&key=${process.env.GOOGLEAPIKEY}
-`);
+const postCommentsYouTube = async (liveChatId, accessToken, comment) => {
+  try {
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
 
- console.log("live chat from youtube", response);
- return response;
+    const data = {
+      snippet: {
+        liveChatId: liveChatId,
+        type: "textMessageEvent",
+        textMessageDetails: {
+          messageText: comment,
+        },
+      },
+    };
 
-  }catch(err){
-    console.error("error from yT", err.message);
+    axios
+      .post(
+        `https://youtube.googleapis.com/youtube/v3/liveChat/messages?key=${process.env.GOOGLEAPIKEY}&part=snippet`,
+        data,
+        {
+          headers: headers,
+        }
+      )
+      .then((response) => {
+        console.log("Message posted successfully:", response.data);
+        return response;
+      })
+      .catch((error) => {
+        console.error("Error posting message:", error.response?.data?.error);
+      });
+  } catch (err) {
+    console.error(err.message);
   }
-}
+};
 
-
-
-export { getBroadCastId, getLiveChat};
+export { getBroadCastId, getLiveChat, postCommentsYouTube, stopStreaming };

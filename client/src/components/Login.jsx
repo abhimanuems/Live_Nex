@@ -17,7 +17,6 @@ export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
-  console.log(userInfo)
   useEffect(() => {
     if (userInfo) {
       navigate("/");
@@ -30,7 +29,7 @@ export default function Login() {
       if (response.message) {
         console.log(response)
         dispatch(setCredentials({ deatils :response.user }));
-        navigate("/");
+        navigate("/admin");
         toast.error(response);
       } else if (response.error) {
         toast.error("inavlid credintials");
@@ -63,7 +62,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative flex flex-col justify-center min-h-screen overflow-hidden ">
+    <div className="relative flex flex-col justify-center min-h-screen overflow-hidden bg-[#E4ECFF]">
       <div className="w-full p-6 m-auto bg-white rounded-md shadow-xl lg:max-w-xl">
         <h1 className="text-3xl font-semibold text-center text-blue-700 uppercase">
           Sign in
@@ -110,7 +109,7 @@ export default function Login() {
             type="button"
             className="flex items-center justify-center w-full p-2 border border-gray-600 rounded-md focus:ring-2 focus:ring-offset-1 focus:ring-blue-600"
           >
-            <FcGoogle style={{fontSize:"35px"}}/>
+            <FcGoogle style={{ fontSize: "35px" }} />
           </button>
         </div>
 

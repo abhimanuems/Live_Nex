@@ -1,11 +1,11 @@
-import React,{useState,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { BsFacebook, BsYoutube } from "react-icons/bs";
 import { AiFillPlusCircle } from "react-icons/ai";
-import {GrClose} from "react-icons/gr"
+import { GrClose } from "react-icons/gr";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
-import { setFbRTMPURL,setyoutubeRTMPURL } from "../slices/userDetails";
+import { setFbRTMPURL, setyoutubeRTMPURL } from "../slices/userDetails";
 import {
   useFacebookAccessTokenMutation,
   useRtmpUrlFBMutation,
@@ -13,140 +13,143 @@ import {
   useYoutubeTokenMutation,
 } from "../slices/userApiSlice";
 
-
-
 export default function Modal() {
   const [showModal, setShowModal] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isFb,setFb] =useState(false);
-  const [isYoutube,SetYoutube] = useState(false);
-  const [isAdddestination,setDestination] = useState(true);
-  const [youTubeAccessToken,setYoutubeAccessToken] = useState(null)
+  const [isFb, setFb] = useState(false);
+  const [isYoutube, SetYoutube] = useState(false);
+  const [isAdddestination, setDestination] = useState(true);
+  const [youTubeAccessToken, setYoutubeAccessToken] = useState(null);
   const navigate = useNavigate();
   const [fbToken] = useFacebookAccessTokenMutation();
-  const [youtubeToken]  = useYoutubeTokenMutation();
+  const [youtubeToken] = useYoutubeTokenMutation("");
   const dispatch = useDispatch();
-   const [rtmpFB] = useRtmpUrlFBMutation();
-   const [rtmpYoutube] = useRtmpUrlYoutubeMutation();
-  
+  const [rtmpFB] = useRtmpUrlFBMutation();
+  const [rtmpYoutube] = useRtmpUrlYoutubeMutation();
+  const [youtubeTD, setYTTD] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
 
-  const createStream =async () => {
-    
-    try{
-       if(isFb || isYoutube) {
-         setShowModal(false);
+  const createStream = async () => {
+    try {
+      if (title.trim() == "") {
+        toast.error("Fill the title");
+        return;
+      }
+      if (description.trim() == "") {
+        toast.error("fill the description field");
+        return;
+      }
+      if (isYoutube) {
+        if (youTubeAccessToken) {
+          await youtubeToken({
+            authorizeToken: youTubeAccessToken,
+            titleDescription: { title, description },
+          }).unwrap();
 
-         if(isFb)
-         {
-          await fbToken().unwrap();
+          const rtmpurlYoutube = await rtmpYoutube().unwrap();
+          dispatch(setyoutubeRTMPURL({ rtmpurlYoutube }));
+          toast.info("rtmp url youtube is done", rtmpurlYoutube);
+        }
+      }
+      if (isFb || isYoutube) {
+        setShowModal(false);
+
+        if (isFb) {
+          await fbToken({
+            titleDescription: { title, description },
+          }).unwrap();
           const rtmpUrl = await rtmpFB().unwrap();
           dispatch(setFbRTMPURL({ rtmpUrl }));
-         }
-         if(isYoutube){
-          const rtmpurlYoutube =await rtmpYoutube().unwrap();
-          dispatch(setyoutubeRTMPURL({ rtmpurlYoutube }));
-         }
-           
-          
+        }
         navigate("/video");
-
-     }  else{
-        toast.error("select atleast one destination")
-     }
-    }
-    catch(err){
-      console.error(err.message)
-      toast.error(err.message)
+      } else {
+        toast.error("select atleast one destination");
+      }
+    } catch (err) {
+      console.error(err.message);
+      toast.error(err.message);
     }
   };
-  useEffect(()=>{
-    if(isFb && isYoutube){
-        setDestination(false)
-        setIsMenuOpen(false)
+  useEffect(() => {
+    if (isFb && isYoutube) {
+      setDestination(false);
+      setIsMenuOpen(false);
+    } else {
+      setDestination(true);
     }
-    else{
-        setDestination(true )
+    if (isFb || isYoutube) {
+      setYTTD(true);
     }
+  }, [isFb, isYoutube, youtubeTD]);
 
-  },[isFb,isYoutube]);
+  // useEffect(()=>{
+  //   if(youTubeAccessToken){
+  //     setTimeout(()=>{
+  //        youtubeToken({
+  //          authorizeToken: youTubeAccessToken,
+  //          titleDescription: { title ,description},
+  //        }).unwrap();
+  //     },2000)
 
-  useEffect(()=>{
-    if(youTubeAccessToken){
-      setTimeout(()=>{
-         youtubeToken({
-           authorizeToken: youTubeAccessToken,
-         }).unwrap();
-      },2000)
-       
-    }
-  },youTubeAccessToken)
+  //   }
+  // },youTubeAccessToken)
 
- 
-   const facebook = () => {
-     try {
-       const authWindow = window.open(
-         "http://localhost:8000/users/facebookauth"
-       );
+  const facebook = () => {
+    try {
+      const authWindow = window.open(
+        "http://localhost:8000/users/facebookauth"
+      );
 
-       const messageListener = (event) => {
-         if (event.origin === "http://localhost:8000") {
-           const response = event.data;
+      const messageListener = (event) => {
+        if (event.origin === "http://localhost:8000") {
+          const response = event.data;
 
-           authWindow.close();
-           window.removeEventListener("message", messageListener);
-          if (response){
-            toast.success("facebook added successfull")
+          authWindow.close();
+          window.removeEventListener("message", messageListener);
+          if (response) {
+            toast.success("facebook added successfull");
+          } else {
+            toast.error("adding error in facebook");
           }
-          else{
-            toast.error("adding error in facebook")
+        }
+      };
+      window.addEventListener("message", messageListener);
+    } catch (error) {
+      if (error) throw error;
+    }
+  };
+  const youtube = () => {
+    try {
+      const authWindow = window.open("http://localhost:8000/users/youtubeAuth");
+
+      const messageListener = async (event) => {
+        if (event.origin === "http://localhost:8000") {
+          const response = event.data;
+
+          if (response.message === "AuthenticationSuccessful") {
+            const authorizeToken = response.data.authorizeToken;
+            setYoutubeAccessToken(authorizeToken);
+            toast.info("youtube added successffull");
+            window.removeEventListener("message", messageListener);
           }
-         }
-       };
-       window.addEventListener("message", messageListener);
-     } catch (error) {
-       if (error) throw error;
-     }
-   };
-   const youtube =() => {
-     try {
-       const authWindow = window.open(
-         "http://localhost:8000/users/youtubeAuth"
-       );
-
-       const messageListener = async (event) => {
-      
-            
-         if (event.origin === "http://localhost:8000") {
-
-           const response = event.data;
-
-           if (response.message === "AuthenticationSuccessful") {
-             const authorizeToken = response.data.authorizeToken;
-             setYoutubeAccessToken(authorizeToken);
-             toast.info("youtube added successffull");
-             window.removeEventListener("message", messageListener);
-             
-           }
-            
-         }
-        
-       };
-       window.addEventListener("message", messageListener);
-     } catch (error) {
-       if (error) throw error;
-     }
-   };
-   const addFb=()=>{
-    setFb(true)
-   facebook();
-   }
-   const addYoutube =()=>{
+        }
+      };
+      window.addEventListener("message", messageListener);
+    } catch (error) {
+      if (error) throw error;
+    }
+  };
+  const addFb = () => {
+    setFb(true);
+    facebook();
+  };
+  const addYoutube = () => {
     SetYoutube(true);
     youtube();
-   }
+  };
 
   const toggleMenu = () => {
-   
     setIsMenuOpen(!isMenuOpen);
   };
   return (
@@ -160,7 +163,7 @@ export default function Modal() {
       </button>
       {showModal ? (
         <>
-          <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
+          <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none w-9/12 my-6 mx-auto max-w-3xl">
             <div className="relative w-4/5 my-6 mx-auto max-w-3xl">
               {/*content*/}
               <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
@@ -175,7 +178,7 @@ export default function Modal() {
                   </button>
                 </div>
                 {/*body*/}
-                <div className="relative p-6 flex-auto">
+                <div className="relative px-6 pt-6 flex-auto">
                   <p className=" text-slate-500 text-lg leading-relaxed">
                     Destinations you can stream
                   </p>
@@ -271,7 +274,34 @@ export default function Modal() {
                     )}
                   </div>
                 </div>
-                <div className="relative p-6 flex-auto"></div>
+                {/* <div className="relative p-6 flex-auto"></div> */}
+                {youtubeTD ? (
+                  <div className="relative m-2 p-2">
+                    <label className="m-2 p-2 text-slate-500 text-lg leading-relaxed">
+                      Title
+                    </label>
+                    <br />
+                    <input
+                      type="text"
+                      placeholder="Enter the title"
+                      className="w-11/12 py-3 pl-3 mb-3 pr-4 text-gray-700 border rounded-md outline-none bg-gray-50 focus:bg-white focus:border-indigo-600"
+                      onChange={(e) => setTitle(e.target.value)}
+                    />
+                    <br />
+                    <label className="m-2 p-2 text-slate-500 text-lg leading-relaxed">
+                      Description
+                    </label>
+                    <br />
+                    <textarea
+                      type="text"
+                      placeholder="Fill the description"
+                      className="w-11/12 py-3 pl-3 pr-4 text-gray-700 border rounded-md outline-none bg-gray-50 focus:bg-white focus:border-indigo-600"
+                      onChange={(e) => {
+                        setDescription(e.target.value);
+                      }}
+                    />
+                  </div>
+                ) : null}
                 {/*footer*/}
                 <div className="flex items-center justify-center p-6 border-t border-solid border-slate-200 rounded-b">
                   <button

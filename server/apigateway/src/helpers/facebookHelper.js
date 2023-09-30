@@ -55,11 +55,11 @@ const getUserIdFB = async (accessTokenFB) => {
   }
 };
 
-const getRtmpUrlFB = async (userId, accessToken, id) => {
+const getRtmpUrlFB = async (userId, accessToken, id, title, description) => {
   const postData = {
     status: "LIVE_NOW",
-    title: "Today's Live Video",
-    description: "This is the live video for today.",
+    title: title,
+    description: description,
   };
 
   try {
@@ -76,6 +76,7 @@ const getRtmpUrlFB = async (userId, accessToken, id) => {
     await User.findByIdAndUpdate(id, {
       $set: {
         "facebook.rtmpUrl": response.data.stream_url,
+        "facebook.liveVideoId": response.data.id,
       },
     });
   } catch (error) {

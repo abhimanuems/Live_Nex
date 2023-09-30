@@ -1,4 +1,4 @@
-import React,{useState,useEffect}from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -9,43 +9,43 @@ import {
 import { logout } from "../slices/authSlice";
 import { Link } from "react-router-dom";
 
-
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [logoutApiCall] = useLogoutMutation();
   const [subscribe] = useSubscriptionMutation();
-  const [pro,setPro] = useState();
+  const [pro, setPro] = useState();
 
-
-
-  // useEffect(()=>{
-  //    subscribe().unwrap().then((isSubscribed)=>{
-  //     if (isSubscribed) {
-  //       setPro(true);
-  //     } else {
-  //       setPro(false);
-  //     }
-  //    }).catch((err)=>{
-  //     console.error(err.message);
-  //     toast.error(err.message)
-  //    })
-  // },[])
+  useEffect(()=>{
+     subscribe().unwrap().then((isSubscribed)=>{
+      if (isSubscribed) {
+        setPro(true);
+      } else {
+        setPro(false);
+      }
+     }).catch((err)=>{
+      console.error(err.message);
+      toast.error(err.message)
+     })
+  },[])
 
   const logoutHandler = async () => {
     try {
-      const res = await logoutApiCall().unwrap();
-      dispatch(logout());
-      navigate("/login");
-      if(res)
-      toast.error("logout successfully");
+      const res = await logoutApiCall().unwrap().then((res)=>{
+        toast.error("logout successfully");
+         dispatch(logout());
+         navigate("/login");
+      }).catch((err)=>{
+        toast.error("internal error")
+        console.error(err)
+      })
+     
     } catch (err) {
       toast.error(err.message);
       console.error(err);
     }
   };
   return (
-    
     <header className="flex items-center justify-between bg-[#0B2447] p-4">
       <div className="flex items-center space-x-2">
         <span

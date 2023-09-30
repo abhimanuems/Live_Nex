@@ -17,72 +17,112 @@ export const userApiSlice = apiSlice.injectEndpoints({
     }),
     signup: builder.mutation({
       query: (data) => ({
-        url: "http://localhost:8000/auth/signup",
+        url: "auth/signup",
         method: "post",
         body: data,
       }),
     }),
     otp: builder.mutation({
       query: (data) => ({
-        url: "http://localhost:8000/auth/otp",
+        url: "auth/otp",
         method: "post",
         body: data,
       }),
     }),
     razporpay: builder.mutation({
       query: () => ({
-        url: "http://localhost:8000/users/orders",
+        url: "users/orders",
         method: "get",
       }),
     }),
-    razporPaySuccess: builder.mutation({
+    facebookAccessToken: builder.mutation({
       query: (data) => ({
-        url: "http://localhost:8000/users/success",
+        url: "users/fbtoken",
         method: "post",
         body: data,
       }),
     }),
-    facebookAccessToken: builder.mutation({
-      query: () => ({
-        url: "http://localhost:8000/users/fbtoken",
-        method: "get",
+    razporPaySuccess: builder.mutation({
+      query: (data) => ({
+        url: "users/success",
+        method: "post",
+        body: data,
       }),
     }),
+
     facebookGetComments: builder.mutation({
       query: () => ({
-        url: "http://localhost:8000/users/fbcomments",
+        url: "users/fbcomments",
         method: "get",
       }),
     }),
     youtubeComments: builder.mutation({
       query: () => ({
-        url: "http://localhost:8000/users/youtubecomments",
+        url: "users/youtubecomments",
         method: "get",
+      }),
+    }),
+    postYTComment: builder.mutation({
+      query: (data) => ({
+        url: "users/youtubecomments",
+        method: "post",
+        body: data,
       }),
     }),
     rtmpUrlFB: builder.mutation({
       query: () => ({
-        url: "http://localhost:8000/users/rtmpFB",
+        url: "users/rtmpFB",
         method: "get",
       }),
     }),
     rtmpUrlYoutube: builder.mutation({
       query: () => ({
-        url: "http://localhost:8000/users/rtmpyoutube",
+        url: "users/rtmpyoutube",
       }),
       method: "get",
     }),
     subscription: builder.mutation({
       query: () => ({
-        url: "http://localhost:8000/users/subscription",
+        url: "users/subscription",
         method: "get",
       }),
     }),
     youtubeToken: builder.mutation({
       query: (data) => ({
-        url: "http://localhost:8000/users/youtubeaccesstoken",
+        url: "users/youtubeaccesstoken",
         method: "post",
         body: data,
+      }),
+    }),
+    YTviewCount: builder.mutation({
+      query: () => ({
+        url: "users/YTviewcount",
+        method: "get",
+      }),
+    }),
+    FBviewCount: builder.mutation({
+      query: () => ({
+        url: "users/fbviewcount",
+        method: "get",
+      }),
+    }),
+    deleteRTMPURLS: builder.mutation({
+      query: () => ({
+        url: "users/deleteRTMPURLS",
+        method: "get",
+      }),
+    }),
+    ticket: builder.mutation({
+      query: (data) => ({
+        url: "users/tickets",
+        method: "post",
+        body: data,
+      }),
+    }),
+    ticketData: builder.mutation({
+      query: () => ({
+        url: "users/tickets",
+        method: "get",
       }),
     }),
     logout: builder.mutation({
@@ -108,5 +148,11 @@ export const {
   useSubscriptionMutation,
   useFacebookGetCommentsMutation,
   useYoutubeTokenMutation,
-  useYoutubeCommentsMutation
+  useYoutubeCommentsMutation,
+  usePostYTCommentMutation,
+  useYTviewCountMutation,
+  useFBviewCountMutation,
+  useDeleteRTMPURLSMutation,
+  useTicketMutation,
+  useTicketDataMutation
 } = userApiSlice;

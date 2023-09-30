@@ -33,7 +33,23 @@ const userSchema = mongoose.Schema(
       liveVideoId:String,
       liveChatId : String
     },
+    tickets: [
+      {
+        email : String,
+        subject:String,
+        description:String,
+        status:Boolean,
+      }
+    ],
+     streams :[
+    {
+      title:String,
+      startTime : Date,
+      endTime : Date
+    }
+  ],
   },
+ 
   {
     timestamps: true,
   }

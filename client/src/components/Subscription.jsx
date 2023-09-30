@@ -21,13 +21,15 @@ const [subscribe] = useSubscriptionMutation();
 
 
     useEffect(() => {
-      const isSubscribed = subscribe().unwrap();
-      if (isSubscribed) {
-        setPro(true);
-      } else {
-        setPro(false);
-      }
-      console.log(isSubscribed);
+      subscribe().unwrap().then((isSubscribed)=>{
+        if (isSubscribed) {
+          setPro(true);
+        } else {
+          setPro(false);
+        }
+      }).catch((err)=>{
+        console.error(err);
+      })
     }, []);
   function loadScript(src) {
     return new Promise((resolve) => {
@@ -96,14 +98,6 @@ const [subscribe] = useSubscriptionMutation();
            razorpaySignature: response.razorpay_signature,
            email,
          }; 
-
-    
-    
-
-        //  const result = await axios.post(
-        //    "http://localhost:8000/users/success",
-        //    data
-        //  );
          const result = await razorpaySuccess(data).unwrap();
            if (result.msg) toast.info("payment successful");
            if (result.msg_error) toast.error("payment failure");
@@ -181,10 +175,7 @@ const [subscribe] = useSubscriptionMutation();
                 />
                 <p>On demand recording</p>
                
-                {/* <CheckIcon
-                  className="h-6 w-5 flex-none text-indigo-600"
-                  aria-hidden="true"
-                /> */}
+               
               </li>
             </ul>
           </div>

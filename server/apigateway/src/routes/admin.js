@@ -6,6 +6,7 @@ import {
   banUser,
   unblock,
   subscriptionsDetails,
+  tickets,
 } from "../Controllers/admin.js";
 
 
@@ -22,6 +23,8 @@ adminRouter.get("/banuser/:id", adminAuthProtect,banUser);
 adminRouter.get("/unblock/:id",adminAuthProtect,unblock);
 
 adminRouter.get("/subscription",adminAuthProtect,subscriptionsDetails)
+
+adminRouter.get("/tickets", adminAuthProtect,tickets);
 
 
 export default adminRouter
